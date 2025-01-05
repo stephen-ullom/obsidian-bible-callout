@@ -2,6 +2,13 @@ import { BollsResponse } from "./models/bolls-response";
 import { Cache } from "./models/cache";
 import { Reference } from "./reference";
 
+export enum BollsEndpoint {
+    GetText = "https://bolls.life/get-text",
+    GetBooks = "https://bolls.life/get-books",
+    GetTranslations = "https://bolls.life/static/bolls/app/views/languages.json",
+}
+
+// Bolls API documentation at https://bolls.life/api/
 export class Bolls {
     static readonly endpoint = "https://bolls.life/get-text";
     private static cache: Cache = {};
@@ -14,7 +21,7 @@ export class Bolls {
         try {
             // Fetch from API
             const response = await fetch(
-                `${Bolls.endpoint}/${reference.translation}/${reference.bookId}/${reference.chapter}/`
+                `${BollsEndpoint.GetText}/${reference.translation}/${reference.bookId}/${reference.chapter}/`
             );
             const data: BollsResponse = await response.json();
 
