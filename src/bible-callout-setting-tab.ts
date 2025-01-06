@@ -16,12 +16,20 @@ export class BibleCalloutSettingTab extends PluginSettingTab {
         const { containerEl } = this;
 
         containerEl.empty();
-        containerEl.createEl("h2", {
+        containerEl.createEl("h1", {
             text: "Bible Callout Settings",
         });
 
+        // Enabled translations
+        new Setting(containerEl).setName("Enabled translations").setHeading();
+        const enabledList = containerEl.createDiv("enabled-translations-list");
+
+        // Available translations
+        new Setting(containerEl).setName("Available translations").setHeading();
         const languageSetting = new Setting(containerEl).setName("Language");
-        const translationListEl = containerEl.createDiv("translation-list");
+        const availableList = containerEl.createDiv(
+            "available-translations-list"
+        );
 
         languageSetting.addDropdown((dropdown) => {
             languages.forEach((language, index) =>
@@ -35,56 +43,88 @@ export class BibleCalloutSettingTab extends PluginSettingTab {
 
                 await this.plugin.saveSettings();
 
-                this.updateList(translationListEl);
+                this.updateList(enabledList, availableList);
             });
         });
 
-        this.updateList(translationListEl);
+        this.updateList(enabledList, availableList);
     }
 
-    updateList(container: HTMLElement) {
-        const index = this.plugin.settings.selectedLanguage;
-        const translations = languages[parseInt(index)].translations;
+    updateList(enabledList: HTMLElement, availableList: HTMLElement) {
+        enabledList.empty();
+        availableList.empty();
 
-        container.empty();
+        languages
+            .map((language, index) => {
+                const isSelectedLanguage =
+                    index.toString() == this.plugin.settings.selectedLanguage;
 
-        translations
-            .sort((a, b) => a.short_name.localeCompare(b.short_name))
-            .forEach((translation) => {
-                new Setting(container)
-                    .setName(translation.short_name)
-                    .setDesc(translation.full_name)
-                    .addToggle((toggle) => {
-                        const name = translation.short_name;
-                        toggle.setValue(
-                            this.plugin.settings.selectedTranslations.includes(
-                                name
-                            )
-                        );
+                if (isSelectedLanguage) {
+                    language.translations
+                        .sort((a, b) =>
+                            a.short_name.localeCompare(b.short_name)
+                        )
+                        .forEach((translation) => {
+                            const name = translation.short_name;
 
-                        toggle.onChange(async (value) => {
-                            if (value) {
-                                this.plugin.settings.selectedTranslations.push(
+                            const isNotEnabled =
+                                !this.plugin.settings.selectedTranslations.contains(
                                     name
                                 );
-                            } else {
-                                const index =
-                                    this.plugin.settings.selectedTranslations.indexOf(
-                                        name
-                                    );
-                                if (index > -1) {
-                                    this.plugin.settings.selectedTranslations.splice(
-                                        index,
-                                        1
-                                    );
-                                }
+
+                            if (isNotEnabled) {
+                                new Setting(availableList)
+                                    .setName(translation.short_name)
+                                    .setDesc(translation.full_name)
+                                    .addButton((button) => {
+                                        button.setButtonText("Add");
+
+                                        button.onClick(async () => {
+                                            this.plugin.settings.selectedTranslations.push(
+                                                name
+                                            );
+
+                                            await this.plugin.saveSettings();
+
+                                            this.plugin.updateCommands();
+
+                                            this.updateList(
+                                                enabledList,
+                                                availableList
+                                            );
+                                        });
+                                    });
                             }
-
-                            await this.plugin.saveSettings();
-
-                            this.plugin.updateCommands();
                         });
-                    });
+                }
+
+                return language.translations;
+            })
+            .flat()
+            .sort((a, b) => a.short_name.localeCompare(b.short_name))
+            .forEach((translation) => {
+                const name = translation.short_name;
+
+                if (this.plugin.settings.selectedTranslations.contains(name)) {
+                    new Setting(enabledList)
+                        .setName(translation.short_name)
+                        .setDesc(translation.full_name)
+                        .addButton((button) => {
+                            button.setButtonText("Remove");
+
+                            button.onClick(async () => {
+                                this.plugin.settings.selectedTranslations.remove(
+                                    name
+                                );
+
+                                await this.plugin.saveSettings();
+
+                                this.plugin.updateCommands();
+
+                                this.updateList(enabledList, availableList);
+                            });
+                        });
+                }
             });
     }
 }

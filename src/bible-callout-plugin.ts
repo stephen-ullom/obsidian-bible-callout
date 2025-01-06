@@ -1,23 +1,24 @@
-import {
-    Command,
-    Editor,
-    MarkdownPostProcessor,
-    Plugin,
-    setIcon,
-} from "obsidian";
+import { App, Editor, MarkdownPostProcessor, Plugin, setIcon } from "obsidian";
 
-import { Bolls } from "./bolls";
-import languages from "./data/languages.json";
-import { Reference } from "./reference";
-import { Callout } from "./models/callout";
-import { BollsResponse } from "./models/bolls-response";
 import { BibleCalloutSettingTab } from "./bible-callout-setting-tab";
-import { BibleCalloutSettings } from "./models/bible-callout-settings";
+import { Bolls } from "./bolls";
 import { DEFAULT_SETTINGS } from "./constants/default-settings";
+import languages from "./data/languages.json";
+import { BibleCalloutSettings } from "./models/bible-callout-settings";
+import { BollsResponse } from "./models/bolls-response";
+import { Callout } from "./models/callout";
+import { Reference } from "./reference";
+
+interface AppWithCommands extends App {
+    commands: {
+        removeCommand: (id: string) => void;
+    };
+}
 
 export class BibleCalloutPlugin extends Plugin {
+    app: AppWithCommands;
     settings: BibleCalloutSettings;
-    commands = new Set<Command>();
+    commandIds = new Set<string>();
     processors = new Set<MarkdownPostProcessor>();
 
     private iconName = "book-open-text";
@@ -192,13 +193,11 @@ export class BibleCalloutPlugin extends Plugin {
     }
 
     updateCommands() {
-        this.commands.forEach((command) => this.removeCommand(command.id));
-        this.commands.clear();
+        this.commandIds.forEach((id) => this.app.commands.removeCommand(id));
+        this.commandIds.clear();
 
-        // TODO: Remove processors
-        // this.processors.forEach((processor) =>
-        //     this.unregisterMarkdownCodeBlockProcessor(processor)
-        // );
+        // Unregister processors
+        // this.processors.forEach((processor) => processor());
 
         languages
             .map((language) => language.translations)
@@ -219,15 +218,19 @@ export class BibleCalloutPlugin extends Plugin {
                         this.insertCalloutCallback(name, editor),
                 });
 
-                this.commands.add(command);
+                this.commandIds.add(command.id);
 
-                const processor = this.registerMarkdownCodeBlockProcessor(
-                    translation.short_name,
-                    (source, element) =>
-                        this.codeBlockHandler(name, source, element)
-                );
+                try {
+                    const processor = this.registerMarkdownCodeBlockProcessor(
+                        name,
+                        (source, element) =>
+                            this.codeBlockHandler(name, source, element)
+                    );
 
-                this.processors.add(processor);
+                    this.processors.add(processor);
+                } catch (error) {
+                    // TODO: unregister processors
+                }
             });
     }
 }
