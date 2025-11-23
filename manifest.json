@@ -1,7 +1,7 @@
 {
     "id": "bible-callout",
     "name": "Bible Callout",
-    "version": "0.1.2",
+    "version": "1.0.0",
     "minAppVersion": "0.15.0",
     "description": "Callout Bible verses in Obsidian",
     "author": "Stephen Ullom",

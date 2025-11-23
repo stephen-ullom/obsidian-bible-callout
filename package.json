@@ -1,6 +1,6 @@
 {
     "name": "obsidian-bible-callout",
-    "version": "0.1.2",
+    "version": "1.0.0",
     "description": "Callout Bible verses in Obsidian",
     "main": "main.js",
     "scripts": {

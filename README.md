@@ -40,6 +40,10 @@ Psalms 23
 
 An internet connection is required to fetch Bible content. There may be an update in the future to provide offline translations.
 
+## Roadmap
+
+Cache data inside the vault for offline support, faster loading and fewer network request.
+
 ## Credits
 
 Data provided by [bolls.life](https://bolls.life).
