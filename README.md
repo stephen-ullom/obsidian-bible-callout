@@ -44,6 +44,12 @@ An internet connection is required to fetch Bible content. There may be an updat
 
 Cache data inside the vault for offline support, faster loading and fewer network request.
 
+## Support
+
+Share your appreciation and encourage new features and optimizations.
+
+<a href="https://www.buymeacoffee.com/stephenullom"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me an orange&emoji=🍊&slug=stephenullom&button_colour=FFDD00&font_colour=000000&font_family=Poppins&outline_colour=000000&coffee_colour=ffffff" /></a>
+
 ## Credits
 
 Data provided by [bolls.life](https://bolls.life).
